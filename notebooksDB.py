@@ -12,7 +12,7 @@ connection = {
 dsn = 'postgresql://{user}:{password}@{host}/{database}'.format(**connection)
 
 Ad = sa.Table(
-    'rozetka_justPrice', metadata,
+    'your_table_name', metadata,
     sa.Column('id', sa.Integer, primary_key=True),
     sa.Column('date', sa.Date, nullable=True),
     sa.Column('name', sa.String),
