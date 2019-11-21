@@ -1,9 +1,11 @@
+import os
 import random
 import asyncio
+from time import sleep
+from threading import Lock
 from asyncio.queues import Queue
 from requests_html import AsyncHTMLSession
 from requests.exceptions import ConnectionError
-from threading import Lock
 
 LOCKER = Lock()
 
@@ -86,10 +88,17 @@ async def main():
 
 if __name__ == '__main__':
 
+    if os.path.exists("notebook_links.txt"):
+        os.remove("notebook_links.txt")
+        print('Deleted Old Links And Ready To Collect New!')
+        sleep(1)
+    else:
+        print("The file does not exist")
+
     asyncio.run(main())
     with open('notebook_links.txt', 'r', encoding='utf-8') as back_up:
         total_links = sum(1 for line in back_up)
 
-    print(f'There Are {total_links} Links Collected To notebook_links.txt For Back-Up!')
+    print(f'There Are {total_links} Fresh Links Collected To notebook_links.txt For Back-Up!')
 
     print('Now you can start your Rozetka_parser!')
