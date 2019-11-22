@@ -16,26 +16,10 @@ with open('fresh_socks.txt', 'r', encoding='utf-8') as f:
     proxies_list = f.read().split('\n')
 
 
-def filter_list(links):
+def filter_links(links):
     links = list(set(links[7:74]))
-    good_links = []
-    for item in links:
-        if item.endswith('comments/'):
-            continue
-        elif item.endswith('comments'):
-            continue
-        elif item.endswith('ua/'):
-            continue
-        elif item.endswith('list/'):
-            continue
-        elif item.endswith('sellers/'):
-            continue
-        elif item == '''#''':
-            continue
-        elif item.endswith('html'):
-            continue
-        else:
-            good_links.append(item)
+    bad_links = ('comments/', 'comments', 'ua/', 'list/', 'sellers/', '''#''', 'html',)
+    good_links = [link for link in links if not link.endswith(bad_links)]
     return good_links
 
 
@@ -52,14 +36,15 @@ async def worker(qu, coro_num, session):
 
             response = await session.get(url, proxies=proxies, headers=headers, timeout=10)
             links = response.html.xpath('//div/a/@href')
-            links_list = filter_list(links)
+            links_list = filter_links(links)
 
             for link in links_list:
                 with LOCKER:
                     with open('notebook_links.txt', 'a') as f:
                         f.write(link + '\n')
 
-                print('[Links saved]')
+            print('[Links saved]')
+            del links_list, response
 
         except ConnectionError:
             await qu.put(url)
@@ -92,8 +77,8 @@ if __name__ == '__main__':
         os.remove("notebook_links.txt")
         print('Deleted Old Links And Ready To Collect New!')
         sleep(1)
-    else:
-        print("The file does not exist")
+    elif not os.path.exists('notebook_links.txt'):
+        print("There is no old links, I'll get new ones")
 
     asyncio.run(main())
     with open('notebook_links.txt', 'r', encoding='utf-8') as back_up:
